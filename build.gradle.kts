@@ -16,5 +16,5 @@ java {
 }
 
 application {
-    mainClass = "org.example.AppKt"
+    mainClass = "de.jessestricker.anno1404.AppKt"
 }
