@@ -3,4 +3,3 @@ plugins {
 }
 
 rootProject.name = "anno-1404"
-include("app")
