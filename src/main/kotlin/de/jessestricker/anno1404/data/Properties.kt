@@ -1,9 +1,5 @@
-package de.jessestricker.anno1404.data.properties
+package de.jessestricker.anno1404.data
 
-import de.jessestricker.anno1404.data.missingElement
-import de.jessestricker.anno1404.data.parseAsXml
-import de.jessestricker.anno1404.data.skipSubtree
-import de.jessestricker.anno1404.data.skipToStartElement
 import java.nio.file.Path
 import javax.xml.stream.XMLStreamConstants.START_ELEMENT
 import javax.xml.stream.XMLStreamReader
@@ -12,11 +8,19 @@ data class Properties(
     val defaultFactory: Factory,
     val defaultWareProduction: WareProduction,
 ) {
-    internal companion object {
-        const val TAG = "Properties"
+    companion object {
+        private const val TAG = "Properties"
         private const val DEFAULT_VALUES_TAG = "DefaultValues"
 
-        fun parse(reader: XMLStreamReader): Properties {
+        fun parse(path: Path): Properties {
+            return parseAsXml(path) { reader ->
+                reader.nextTag()
+                reader.require(START_ELEMENT, null, TAG)
+                parse(reader)
+            }
+        }
+
+        private fun parse(reader: XMLStreamReader): Properties {
             check(reader.isStartElement && reader.localName == TAG)
 
             var defaultFactory: Factory? = null
@@ -127,9 +131,3 @@ fun String.toProduct() = Product(this)
 value class Amount(val kilograms: Int)
 
 fun Int.toAmount() = Amount(this)
-
-fun parseProperties(path: Path) = parseAsXml(path) { reader ->
-    reader.nextTag()
-    reader.require(START_ELEMENT, null, Properties.TAG)
-    Properties.parse(reader)
-}
