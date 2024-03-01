@@ -1,9 +1,14 @@
 package de.jessestricker.anno1404
 
-class App {
-    val greeting: String get() = "Hello World!"
-}
+import de.jessestricker.anno1404.data.properties.parseProperties
+import kotlin.io.path.Path
+import kotlin.io.path.div
+
+private val MAINDATA_DIR = Path("extracted/maindata")
+private val DATA1_FILE = MAINDATA_DIR / "data1.rda"
+private val PROPERTIES_XML_FILE = DATA1_FILE / "data/config/game/properties.xml"
 
 fun main() {
-    println(App().greeting)
+    val properties = parseProperties(PROPERTIES_XML_FILE)
+    println(properties)
 }
