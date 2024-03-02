@@ -34,15 +34,16 @@ internal fun XMLStreamReader.skipSubtree() {
     assert(eventType == END_ELEMENT)
 }
 
-internal fun XMLStreamReader.skipToStartElement(namespaceURI: String?, localName: String?) {
-    while (true) {
+internal fun XMLStreamReader.skipToStartElement(namespaceURI: String?, localName: String?): Boolean {
+    while (hasNext()) {
         val eventType = next()
         if (eventType == START_ELEMENT) {
             if ((namespaceURI == null || namespaceURI == getNamespaceURI()) && (localName == null || localName == getLocalName())) {
-                break
+                return true
             }
         }
     }
+    return false
 }
 
 internal fun missingElement(localName: String): Nothing {

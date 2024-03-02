@@ -26,7 +26,9 @@ data class Properties(
             var defaultFactory: Factory? = null
             var defaultWareProduction: WareProduction? = null
 
-            reader.skipToStartElement(null, DEFAULT_VALUES_TAG)
+            if (!reader.skipToStartElement(null, DEFAULT_VALUES_TAG)) {
+                missingElement(DEFAULT_VALUES_TAG)
+            }
             while (reader.nextTag() == START_ELEMENT) {
                 when (reader.localName) {
                     Factory.TAG -> defaultFactory = Factory.parse(reader)
@@ -51,8 +53,12 @@ data class Factory(
 ) {
     internal companion object {
         const val TAG = "Factory"
+        private const val RAW_MATERIAL_1_TAG = "RawMaterial1"
+        private const val RAW_CAPACITY_1_TAG = "RawCapacity1"
+        private const val RAW_NEEDED_1_TAG = "RawNeeded1"
+        private const val RAW_MATERIAL_2_TAG = "RawMaterial2"
 
-        fun parse(reader: XMLStreamReader): Factory {
+        fun parse(reader: XMLStreamReader, default: Factory? = null): Factory {
             check(reader.isStartElement && reader.localName == TAG)
 
             var rawMaterial1: Product? = null
@@ -62,19 +68,19 @@ data class Factory(
 
             while (reader.nextTag() == START_ELEMENT) {
                 when (reader.localName) {
-                    "RawMaterial1" -> rawMaterial1 = reader.elementText.toProduct()
-                    "RawCapacity1" -> rawCapacity1 = reader.elementText.toInt().toAmount()
-                    "RawNeeded1" -> rawNeeded1 = reader.elementText.toInt().toAmount()
-                    "RawMaterial2" -> rawMaterial2 = reader.elementText.toProduct()
+                    RAW_MATERIAL_1_TAG -> rawMaterial1 = reader.elementText.toProduct()
+                    RAW_CAPACITY_1_TAG -> rawCapacity1 = reader.elementText.toInt().toAmount()
+                    RAW_NEEDED_1_TAG -> rawNeeded1 = reader.elementText.toInt().toAmount()
+                    RAW_MATERIAL_2_TAG -> rawMaterial2 = reader.elementText.toProduct()
                     else -> reader.skipSubtree()
                 }
             }
 
             return Factory(
-                rawMaterial1 = rawMaterial1 ?: missingElement("RawMaterial1"),
-                rawCapacity1 = rawCapacity1 ?: missingElement("RawCapacity1"),
-                rawNeeded1 = rawNeeded1 ?: missingElement("RawNeeded1"),
-                rawMaterial2 = rawMaterial2 ?: missingElement("RawMaterial2"),
+                rawMaterial1 = rawMaterial1 ?: default?.rawMaterial1 ?: missingElement(RAW_MATERIAL_1_TAG),
+                rawCapacity1 = rawCapacity1 ?: default?.rawCapacity1 ?: missingElement(RAW_CAPACITY_1_TAG),
+                rawNeeded1 = rawNeeded1 ?: default?.rawNeeded1 ?: missingElement(RAW_NEEDED_1_TAG),
+                rawMaterial2 = rawMaterial2 ?: default?.rawMaterial2 ?: missingElement(RAW_MATERIAL_2_TAG),
             )
         }
     }
@@ -88,8 +94,12 @@ data class WareProduction(
 ) {
     internal companion object {
         const val TAG = "WareProduction"
+        private const val PRODUCTION_TIME_TAG = "ProductionTime"
+        private const val PRODUCT_TAG = "Product"
+        private const val PRODUCTION_CAPACITY_TAG = "ProductionCapacity"
+        private const val PRODUCTION_COUNT_TAG = "ProductionCount"
 
-        fun parse(reader: XMLStreamReader): WareProduction {
+        fun parse(reader: XMLStreamReader, default: WareProduction? = null): WareProduction {
             check(reader.isStartElement && reader.localName == TAG)
 
             var productionTime: Time? = null
@@ -99,19 +109,21 @@ data class WareProduction(
 
             while (reader.nextTag() == START_ELEMENT) {
                 when (reader.localName) {
-                    "ProductionTime" -> productionTime = reader.elementText.toInt().toTime()
-                    "Product" -> product = reader.elementText.toProduct()
-                    "ProductionCapacity" -> productionCapacity = reader.elementText.toInt().toAmount()
-                    "ProductionCount" -> productionCount = reader.elementText.toInt().toAmount()
+                    PRODUCTION_TIME_TAG -> productionTime = reader.elementText.toInt().toTime()
+                    PRODUCT_TAG -> product = reader.elementText.toProduct()
+                    PRODUCTION_CAPACITY_TAG -> productionCapacity = reader.elementText.toInt().toAmount()
+                    PRODUCTION_COUNT_TAG -> productionCount = reader.elementText.toInt().toAmount()
                     else -> reader.skipSubtree()
                 }
             }
 
             return WareProduction(
-                productionTime = productionTime ?: missingElement("ProductionTime"),
-                product = product ?: missingElement("Product"),
-                productionCapacity = productionCapacity ?: missingElement("ProductionCapacity"),
-                productionCount = productionCount ?: missingElement("ProductionCount"),
+                productionTime = productionTime ?: default?.productionTime ?: missingElement(PRODUCTION_TIME_TAG),
+                product = product ?: default?.product ?: missingElement(PRODUCT_TAG),
+                productionCapacity = productionCapacity ?: default?.productionCapacity ?: missingElement(
+                    PRODUCTION_CAPACITY_TAG
+                ),
+                productionCount = productionCount ?: default?.productionCount ?: missingElement(PRODUCTION_COUNT_TAG),
             )
         }
     }
