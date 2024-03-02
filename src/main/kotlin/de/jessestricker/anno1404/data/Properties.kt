@@ -1,5 +1,6 @@
 package de.jessestricker.anno1404.data
 
+import de.jessestricker.anno1404.math.toFraction
 import java.nio.file.Path
 import javax.xml.stream.XMLStreamConstants.START_ELEMENT
 import javax.xml.stream.XMLStreamReader
@@ -95,6 +96,9 @@ data class WareProduction(
     val productionCapacity: Amount,
     val productionCount: Amount,
 ) {
+    val tonsPerMinute get() = productionCount.tons / productionTime.minutes
+    val secondsPerTon get() = productionTime.seconds / productionCount.tons
+
     internal companion object {
         const val TAG = "WareProduction"
         private const val PRODUCTION_TIME_TAG = "ProductionTime"
@@ -159,7 +163,10 @@ data class ProductIconGUID(
 }
 
 @JvmInline
-value class Time(val milliseconds: Int)
+value class Time(val milliseconds: Int) {
+    val seconds get() = milliseconds.toFraction() / 1000
+    val minutes get() = seconds / 60
+}
 
 fun Int.toTime() = Time(this)
 
@@ -169,6 +176,8 @@ value class Product(val name: String)
 fun String.toProduct() = Product(this)
 
 @JvmInline
-value class Amount(val kilograms: Int)
+value class Amount(val kilograms: Int) {
+    val tons get() = kilograms.toFraction() / 1000
+}
 
 fun Int.toAmount() = Amount(this)
