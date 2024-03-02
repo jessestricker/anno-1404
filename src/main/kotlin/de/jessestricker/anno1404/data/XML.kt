@@ -46,6 +46,18 @@ internal fun XMLStreamReader.skipToStartElement(namespaceURI: String?, localName
     return false
 }
 
+internal fun XMLStreamReader.skipToEndElement(namespaceURI: String?, localName: String?): Boolean {
+    while (hasNext()) {
+        val eventType = next()
+        if (eventType == END_ELEMENT) {
+            if ((namespaceURI == null || namespaceURI == getNamespaceURI()) && (localName == null || localName == getLocalName())) {
+                return true
+            }
+        }
+    }
+    return false
+}
+
 internal fun missingElement(localName: String): Nothing {
     throw NoSuchElementException("missing element $localName")
 }

@@ -7,6 +7,7 @@ import javax.xml.stream.XMLStreamReader
 data class Properties(
     val defaultFactory: Factory,
     val defaultWareProduction: WareProduction,
+    val productIconGUID: ProductIconGUID,
 ) {
     companion object {
         private const val TAG = "Properties"
@@ -25,21 +26,23 @@ data class Properties(
 
             var defaultFactory: Factory? = null
             var defaultWareProduction: WareProduction? = null
+            var productIconGUID: ProductIconGUID? = null
 
-            if (!reader.skipToStartElement(null, DEFAULT_VALUES_TAG)) {
-                missingElement(DEFAULT_VALUES_TAG)
-            }
-            while (reader.nextTag() == START_ELEMENT) {
-                when (reader.localName) {
-                    Factory.TAG -> defaultFactory = Factory.parse(reader)
-                    WareProduction.TAG -> defaultWareProduction = WareProduction.parse(reader)
-                    else -> reader.skipSubtree()
+            while (reader.skipToStartElement(null, DEFAULT_VALUES_TAG)) {
+                while (reader.nextTag() == START_ELEMENT) {
+                    when (reader.localName) {
+                        Factory.TAG -> defaultFactory = Factory.parse(reader)
+                        WareProduction.TAG -> defaultWareProduction = WareProduction.parse(reader)
+                        ProductIconGUID.TAG -> productIconGUID = ProductIconGUID.parse(reader)
+                        else -> reader.skipSubtree()
+                    }
                 }
             }
 
             return Properties(
                 defaultFactory = defaultFactory ?: missingElement(Factory.TAG),
                 defaultWareProduction = defaultWareProduction ?: missingElement(WareProduction.TAG),
+                productIconGUID = productIconGUID ?: missingElement(ProductIconGUID.TAG),
             )
         }
     }
@@ -125,6 +128,32 @@ data class WareProduction(
                 ),
                 productionCount = productionCount ?: default?.productionCount ?: missingElement(PRODUCTION_COUNT_TAG),
             )
+        }
+    }
+}
+
+data class ProductIconGUID(
+    val productGUIDs: Map<String, String>,
+) {
+    internal companion object {
+        const val TAG = "GUIBalancing"
+        private const val PRODUCT_ICON_GUID_TAG = "ProductIconGUID"
+
+        fun parse(reader: XMLStreamReader): ProductIconGUID {
+            check(reader.isStartElement && reader.localName == TAG)
+            if (!reader.skipToStartElement(null, PRODUCT_ICON_GUID_TAG)) {
+                missingElement(PRODUCT_ICON_GUID_TAG)
+            }
+
+            val productGUIDs = mutableMapOf<String, String>()
+            while (reader.nextTag() == START_ELEMENT) {
+                val product = reader.localName
+                val guid = reader.elementText
+                productGUIDs[product] = guid
+            }
+
+            reader.skipToEndElement(null, TAG)
+            return ProductIconGUID(productGUIDs)
         }
     }
 }
